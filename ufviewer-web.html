@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>UBERFANTASIES.COM</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
+
+
+</head>
+<body >
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v1.0.0/leaflet.markercluster.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="js/wow.js"></script>
+<script src="socket.io/socket.io.js"></script>
+
+<link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v1.0.0/MarkerCluster.css' rel='stylesheet' />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	 <link href="https://fonts.googleapis.com/css?family=Passion+One" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+<link href='css/MarkerCluster.Default.css' rel='stylesheet' />
+<link rel="stylesheet" type="text/css" href="css/uf-cluster1.css">
+<link rel="stylesheet" href="css/js-snackbar.css" />
+ <link rel="stylesheet" type="text/css" href="css/animate.css">
+  <link rel="stylesheet" type="text/css" href="css/anims.css">
+    <link
+    rel="stylesheet"
+    href="css/animater.css"
+  />
+  
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+			font-family: 'Passion One', cursive;
+			overflow-y: hidden;
+        }
+        
+        #map {
+			position: fixed;
+			bottom:75px;
+            width: 100%;
+            height: 100%;
+			z-index: 1;
+			}
+			
+        .marker-cluster-small {
+            background-color: #ffffff !important;
+            z-index: 20;
+        }
+        
+        .marker-cluster-small div {
+            background-color: rgb(137, 192, 250)!important;
+            color: #ffffff !important;
+            -webkit-transition: all 300ms linear;
+            transition: all 100ms 3inear;
+            animation: cluster-animation 1.5s infinite;
+            z-index: 10;
+        }
+        
+        @keyframes cluster-animation {
+            0%,
+            100% {
+                box-shadow: 0px 0px 0px 4px rgba(0, 0, 0, 0.1);
+            }
+            50% {
+                box-shadow: 0px 0px 0px 9px rgba(0, 0, 0, 0.1);
+            }
+        }
+		
+		.noSelect {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.noSelect:focus {
+    text-decoration: none !important;
+}
+
+a {
+    color: #0060B6;
+    text-decoration: none !important;
+}
+
+a:hover {
+    color:#00A0C6; 
+    text-decoration: none !important;
+    cursor:pointer;  
+}
+
+button:focus {outline:0;}
+
+
+#control {
+	background-color: rgba(46, 46, 49, 0.9);
+    z-index: 2;
+    top: auto;
+    position: fixed;
+    bottom: 0px;
+    margin: 0;
+    border: 0;
+    width: 100%;
+    height: 75px; 
+	display: inline-block;
+}
+
+
+
+</style>
+
+
+
+
+<div id='map'></div>
+
+
+
+<div id="control" style="display:show">
+
+<button id="viewer" class="btn viewer animated fadeIn delaybox"><img id="viewerimage" class="viewerimg animated fadeIn" onclick="addMiniBouce()"></img><span id="dbutton" class="btn1textbox animated bounceInLeft delaybox"></span><span id="drivername" class="btn1text animated delaybox bounceInLeft"></span></button>
+
+<button id="customer" class="btncounter totalcount animated fadeIn delaybox2"><img id="customerimage" class="driverimg animated fadeIn" onclick="addMiniBouce2()"></img></button>
+
+
+
+
+
+</div>
+<script>
+
+L.mapbox.accessToken = 'pk.eyJ1IjoianVsZXNjaGFtYmVybGFpbiIsImEiOiJja3VlaGYxaXMwOGhlMm9xZXg2OHIycDQyIn0.syPj20pPI9fBt-SuvMAFyA';
+
+
+<!-- Get Users -->
+ //       var userOnlineStatus = [];
+ // 
+ //          $.getJSON('https://www.uberfantasies.com/var.php', function(data) {
+  //            for (var i = 0; i < data.length; i++) {
+  //                userOnlineStatus.push(data[i]);
+  //                console.log(userOnlineStatus);
+  //                init();
+  //            }
+  //        });
+<!-- Get Users -->
+
+const userOnlineStatus = [
+  { id: 10101, name: 'NAKED', lat: 52.4734975, lng: -1.4911260, ID: 100102, status: 'offline'},
+  { id: 10102, name: 'SHAVEN', lat: 52.4194975, lng: -1.5101260, ID: 100103, status: 'busy'},
+  { id: 10103, name: 'SAMMY', lat: 52.510485, lng: -1.4811260, ID: 100104, status: 'online'},
+  { id: 10104, name: 'LILLY', lat: 52.4904975, lng: -1.5151260, ID: 100101, status: 'online'},
+  { id: 10105, name: 'SEXY-BI', lat: 52.403002, lng: -1.4991260, ID: 100105, status: 'offline'},
+  { id: 10106, name: 'BLONDE', lat: 52.514825, lng: -1.4501260, ID: 100106, status: 'online'},
+  { id: 10107, name: 'BIGTITS', lat: 52.510485, lng: -1.399760, ID: 100107, status: 'busy'},
+  { id: 10108, name: 'NAUGHTY', lat: 52.403002, lng: -1.491740, ID: 100108, status: 'online'}
+];
+
+
+$('#drivername').text('PERVERT');
+$('#customername').text('HANNAH.L');
+
+
+var map = L.mapbox.map('map')
+      .setView([52.470485, -1.4601260], 12)
+      .addLayer(L.mapbox.styleLayer('mapbox://styles/mapbox/streets-v11'));	  
+	  
+	  var userLayer = L.layerGroup().addTo(map);
+	  var markerLayer = new L.MarkerClusterGroup().addTo(map);
+	  
+//var markers = new L.MarkerClusterGroup();
+
+function connect_init(userdata) {
+var socket = io.connect('');
+
+					
+socket.emit('setup', userdata);
+
+
+socket.on('update', function (data) {
+
+var checkuser = data.username;
+var newstatus = data.status;
+var new_status;
+
+result = userOnlineStatus.map(obj => obj.name).indexOf(checkuser) >= 0;
+console.log (result);
+if (result === true) {
+
+objIndex = userOnlineStatus.findIndex((obj => obj.name == checkuser));
+userOnlineStatus[objIndex].status = newstatus;
+console.log(userOnlineStatus);
+
+if (newstatus === "online") {
+	new_status = "success";
+	}
+	
+else if (newstatus === "offline") {
+	new_status = "danger";
+	}
+	
+else if (newstatus === "busy") {
+	new_status = "warning";
+	};
+
+SnackBar({message: checkuser + " is now " + newstatus, status: new_status, dismissible: false, timeout: 5000, speed: "0.5s", position: 'br'}); 
+init();
+$("#"+checkuser).addClass("animate__animated animate__heartBeat");
+
+}
+});
+
+
+socket.on('connected', function (data) {
+//alert("CONNECTED");
+SnackBar({message: "Connected to server!", status: "success", dismissible: false, timeout: 5000, speed: "0.5s", position: 'br'}); 
+         });
+}
+
+
+function init() {
+
+// Add Clients to the map //
+markerLayer.clearLayers();
+var status;
+var username;
+var id;
+userOnlineStatus.forEach((point) => {
+
+username = point.name;
+status = point.status;
+id = point.id;
+
+	var client = L.divIcon({
+		className: 'location-pin',			
+		html: '<div><img src="img/'+point.id+'.jpg"></div><div id="'+username+'pin" class="pin-side '+status+'"></div><div id='+username+' class="pin-side pin '+status+' '+'"></div>',
+		iconSize: [60, 60],
+		iconAnchor: [18, 60]});
+        
+		var marker = L.marker(point, { icon: client, ID: id, name: username, status: status }).on('click', markerOnClick).addTo(markerLayer);
+		//marker.bindPopup(`NAME: ${point.name}`).openPopup();
+		marker.name = point.name;
+});
+}
+
+
+
+function markerOnClick(e)
+{
+
+var sname = this.options.name;
+var sstatus = this.options.status;
+var new_status;
+
+if (sstatus === "online") {
+	new_status = "success";
+	}
+	
+else if (sstatus === "offline") {
+	new_status = "danger";
+	}
+	
+else if (sstatus === "busy") {
+	new_status = "warning";
+	};
+// alert("Name of Online User clicked: " + this.options.name + " and ID is : " + this.options.ID);
+ SnackBar({message: "" +sname + " is " + sstatus, status: new_status, dismissible: false, timeout: 5000, speed: "0.5s", position: 'br'}); 
+}		
+
+
+function success(pos) {
+
+  var crd = pos.coords;
+  var newlat = crd.latitude;
+  var newlng = crd.longitude;
+  var name = "me";
+  var markers;
+  
+// Add my marker
+
+    var myIcon = L.divIcon({
+    className: 'user-location-pin',
+    html: '<div class="user-bounce bounce-7"><img id"userimg" src="img/jules.jpg"><div id="pin" class="user-pin"></div></div><div class="pulse"></div>',
+	iconSize: [30, 30],
+	iconAnchor: [10, 33]});
+
+        var marker = L.marker ([newlat, newlng], {
+            icon: myIcon,
+			bounceOnAdd: true
+        });
+		
+	userLayer.addLayer(marker);
+	userLayer.bindPopup('<p>You are here</p>');
+	map.panTo([newlat, newlng], 14);
+	
+	//map.fitBounds(MarkerClusterGroup.getBounds());
+
+  console.log('Your current position is:');
+  console.log(`Latitude : ${crd.latitude}`);
+  console.log(`Longitude: ${crd.longitude}`);
+  console.log(`More or less ${crd.accuracy} meters.`);
+  
+ SnackBar({message: "GPS working!", status: "success", dismissible: false, timeout: 5000, speed: "0.5s",  position: 'br'});
+ SnackBar({message: "Users loaded successfully!", status: "success", dismissible: false, timeout: 5000, speed: "0.5s", position: 'br'});
+				
+  init();
+  
+  var userdata={
+    usertype: 'viewer',  
+    username : 'TestViewer',  
+    active : true,
+    user_lat : newlat,
+    user_lng : newlng,
+    update : true  
+    }; 
+  
+ connect_init(userdata);
+}
+
+function error(err) {
+  console.warn(`ERROR(${err.code}): ${err.message}`);
+}
+
+var options = {
+  enableHighAccuracy: true,
+  timeout: 50000,
+  maximumAge: 0
+};
+
+// MAIN RUN //
+navigator.geolocation.getCurrentPosition(success, error, options);
+init();
+// MAIN RUN //
+//  Taker this out and 349-355 to stop user location navigator.geolocation.getCurrentPosition(success, error, options);
+
+//var userdata={
+ //   usertype: 'viewer',  
+  ////  username : 'dave',  
+   // active : true,
+ //   user_lat : '52.0',
+  //  user_lng : '-101',
+ //   update : true  
+ //   }; 
+
+//var socket = io.connect('http://localhost:8080');
+//socket.emit('setup', userdata);
+//connect_init(userdata);
+//document.getElementById("viewerimage").src = "img/jules.png";
+//document.getElementById("customerimage").src = "img/avatar.png";
+
+init();
+
+</script>
+<script src="js/js-snackbar.min.js"></script>
+</body>
+</html>

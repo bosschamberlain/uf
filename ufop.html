@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>UBERFANTASIES.COM</title>
+<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; media-src *; img-src *; script-src * 'unsafe-inline' 'unsafe-eval'">	
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
+
+
+</head>
+<body >
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v1.0.0/leaflet.markercluster.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="js/js-snackbar.min.js"></script>
+<script src="http://localhost:8080/socket.io/socket.io.js"></script>
+
+<link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v1.0.0/MarkerCluster.css' rel='stylesheet' />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href='css/MarkerCluster.Default.css' rel='stylesheet' />
+<link rel="stylesheet" type="text/css" href="css/uf-cluster1.css">
+<link rel="stylesheet" href="css/js-snackbar.css" />
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+			font-family: 'Montserrat', sans-serif;
+        }
+        
+        #map {
+            position: absolute;
+            ;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+			}
+			
+			</style>
+</head>
+<body>	
+		
+
+<input type='text' id='user_name' />
+<button type="button" class="button" onclick="var username=document.getElementById('user_name').value;var data={username : username, status : 'online'}; updatestatus(data);">Set to Online</button>
+<button type="button" class="button" onclick="var username=document.getElementById('user_name').value;var data={username : username, status : 'offline'}; updatestatus(data);">Set to Offline</button>
+<button type="button" class="button" onclick="var username=document.getElementById('user_name').value;var data={username : username, status : 'busy'}; updatestatus(data);">Set to Busy</button>
+
+<button type="button" class="button" onclick="var username=document.getElementById('user_name').value;var data={username : username, status : 'busy'}; updatesdb(data);">UPDATE DB</button>
+<script>
+
+const userOnlineStatus = [
+  { id: 10101, name: 'NAKED', lat: 52.4734975, lng: -1.4911260, ID: 100102, status: 'offline'},
+  { id: 10102, name: 'SHAVEN', lat: 52.4194975, lng: -1.5101260, ID: 100103, status: 'busy'},
+  { id: 10103, name: 'SAMMY', lat: 52.510485, lng: -1.4811260, ID: 100104, status: 'online'},
+  { id: 10104, name: 'LILLY', lat: 52.4904975, lng: -1.5151260, ID: 100101, status: 'online'},
+  { id: 10105, name: 'SEXY-BI', lat: 52.403002, lng: -1.4991260, ID: 100105, status: 'offline'},
+  { id: 10106, name: 'BLONDE', lat: 52.514825, lng: -1.4501260, ID: 100106, status: 'online'},
+  { id: 10107, name: 'BIGTITS', lat: 52.510485, lng: -1.399760, ID: 100107, status: 'busy'},
+  { id: 10108, name: 'NAUGHTY', lat: 52.403002, lng: -1.491740, ID: 100108, status: 'online'}
+];
+
+</script>
+
+<select id="mySelect" onchange="selectOperator()">
+<script>
+var options;
+userOnlineStatus.forEach((point) => {
+
+name = point.name;
+
+options = "<option value="+name+">"+name+"</option>";
+document.write(options);
+});
+</script>
+</select>
+
+
+<script>
+//var username = "BIGTITS";
+//L.mapbox.accessToken = 'pk.eyJ1IjoianVsZXNjaGFtYmVybGFpbiIsImEiOiJja3VlaGYxaXMwOGhlMm9xZXg2OHIycDQyIn0.syPj20pPI9fBt-SuvMAFyA';
+
+//var map = L.mapbox.map('map')
+//      .setView([52.470485, -1.4601260], 12)
+   //   .addLayer(L.mapbox.styleLayer('mapbox://styles/mapbox/streets-v11'));	  
+	  
+//	  var userLayer = L.layerGroup().addTo(map);
+	  
+var socket = io.connect('http://localhost:8080');	  
+//socket.emit('setup', userdata);	
+  
+
+function success(pos) {
+
+  var crd = pos.coords;
+  var newlat = crd.latitude;
+  var newlng = crd.longitude;
+  var name = "me";
+  var markers;
+  
+// Add my marker
+
+    var myIcon = L.divIcon({
+    className: 'user-location-pin',
+    html: '<div class="user-bounce bounce-7"><img id"userimg" src="img/jules.jpg"><div id="pin" class="user-pin"></div></div><div class="pulse"></div>',
+	iconSize: [30, 30],
+	iconAnchor: [10, 33]});
+
+        var marker = L.marker ([newlat, newlng], {
+            icon: myIcon,
+			bounceOnAdd: true
+        });
+		
+	//userLayer.addLayer(marker);
+	//userLayer.bindPopup('<p>You are here</p>');
+//	map.panTo([newlat, newlng], 14);
+	
+	//map.fitBounds(MarkerClusterGroup.getBounds());
+
+  console.log('Your current position is:');
+  console.log(`Latitude : ${crd.latitude}`);
+  console.log(`Longitude: ${crd.longitude}`);
+  console.log(`More or less ${crd.accuracy} meters.`);
+  
+ SnackBar({message: "GPS working!", status: "success", dismissible: false, timeout: 5000, speed: "0.5s", position: 'br'});
+}
+
+
+
+function error(err) {
+  console.warn(`ERROR(${err.code}): ${err.message}`);
+}
+
+var options = {
+  enableHighAccuracy: true,
+  timeout: 50000,
+  maximumAge: 0
+};
+
+function selectOperator(name) {
+var user_dis = document.getElementById('user_name').value=x;
+
+
+  var x = document.getElementById("mySelect").value;
+
+    var data={username: x}; 
+	
+	document.getElementById('user_name').value=x;
+	
+	var userdata={
+    usertype: 'operator',  
+    username : x,  
+    active : true,
+    user_lat : 'newlat',
+    user_lng : 'newlng',
+    update : true  
+    }; 
+  
+//connect_init(userdata);
+SnackBar({message: data.username + ' Selected', status: "success", dismissible: false, timeout: 5000, speed: "0.5s",position: 'br'});
+ 
+}
+
+
+
+
+function updatestatus(data) {
+var userdata = data;
+	socket.emit('updatestatus', userdata);
+}
+
+function updatesdb(data) {
+var new_name = data.username;
+var new_status = data.status;
+//alert(new_name);
+	var data={ 
+    name : new_name,  
+    status : new_status  
+    }; 
+
+ //$.getJSON('https://www.uberfantasies.com/update.php', data);
+ 
+ var url = "https://www.uberfantasies.com/update.php?" + data;
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", url);
+
+xhr.onreadystatechange = function () {
+   if (xhr.readyState === 4) {
+      console.log(xhr.status);
+      console.log(xhr.responseText);
+   }};
+
+xhr.send();
+
+
+}
+
+navigator.geolocation.getCurrentPosition(success, error, options);
+
+</script>
+</body>
+</html>
